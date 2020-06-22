@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Threading;
+using GameOfLife;
 using GameOfLife.Boards;
 using GameOfLife.Rules;
 
-namespace GameOfLife
+namespace GameOfLineConsole
 {
     class Program
     {
@@ -12,11 +12,11 @@ namespace GameOfLife
             Console.WriteLine("Game of Life in C#");
 
             var board = ConwaysGameOfLife.GetBlankBoard(50, 50);
-            //ConwaysGameOfLife.RandomiseBoard(board);
+            ConwaysGameOfLife.RandomiseBoard(board);
 
             var rules = ConwaysGameOfLife.GetRulesEngine();
 
-            ConwaysGameOfLife.RenderPredefinedPattern(board, ConwaysGameOfLife.PredefinedPatterns.Exploder, (25, 25));
+            //ConwaysGameOfLife.RenderPredefinedPattern(board, ConwaysGameOfLife.PredefinedPatterns.Exploder, (25, 25));
 
             Console.ReadLine();
 
