@@ -19,8 +19,7 @@ namespace GameOfLife.Rules
                 var newState = (currentState, count) switch
                 {
                     (ConwayCellState.Live, 2) => ConwayCellState.Live,
-                    (ConwayCellState.Live, 3) => ConwayCellState.Live,
-                    (ConwayCellState.Dead, 3) => ConwayCellState.Live,
+                    (_, 3) => ConwayCellState.Live,
                     _ => ConwayCellState.Dead
                 };
 

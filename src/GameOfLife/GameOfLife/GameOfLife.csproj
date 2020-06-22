@@ -8,11 +8,34 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\Exploder.bmp" />
+    <None Remove="Resources\Glider.bmp" />
+    <None Remove="Resources\GosperGliderGun.bmp" />
+    <None Remove="Resources\LightweightSpaceShip.bmp" />
+    <None Remove="Resources\SmallExploder.bmp" />
+    <None Remove="Resources\TenCellRow.bmp" />
+    <None Remove="Resources\Tumbler.bmp" />
+    <None Remove="Resources\XKCDRip.bmp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Tumbler.bmp" />
+    <EmbeddedResource Include="Resources\LightweightSpaceship.bmp" />
+    <EmbeddedResource Include="Resources\TenCellRow.bmp" />
+    <EmbeddedResource Include="Resources\Glider.bmp" />
+    <EmbeddedResource Include="Resources\Exploder.bmp" />
+    <EmbeddedResource Include="Resources\GosperGliderGun.bmp" />
+    <EmbeddedResource Include="Resources\XKCDRip.bmp" />
+    <EmbeddedResource Include="Resources\SmallExploder.bmp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="3.1.5" />
     <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Resources\" />
+    <Folder Include="Internal\" />
   </ItemGroup>
 
 </Project>
