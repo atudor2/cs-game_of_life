@@ -4,7 +4,7 @@ namespace GameOfLife.Rules
 {
     public class ConwayGameOfLifeRulesEngine : IBoardRulesEngine<ConwayCellState>
     {
-        public IBoard<ConwayCellState> ApplyRulesToBoard(IBoard<ConwayCellState> board)
+        public IBoard<ConwayCellState> ExecuteRules(IBoard<ConwayCellState> board)
         {
             var newBoard = board.Snapshot();
             foreach (var cell in board.GetCells())

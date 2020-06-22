@@ -25,7 +25,7 @@ namespace GameOfLife
             {
                 RenderBoard(board);
 
-                board = rules.ApplyRulesToBoard(board);
+                board = rules.ExecuteRules(board);
 
                 //Thread.Sleep(1_000/2); // tick
                 Console.ReadLine();

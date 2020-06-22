@@ -4,6 +4,6 @@ namespace GameOfLife.Rules
 {
     public interface IBoardRulesEngine<T>
     {
-        IBoard<T> ApplyRulesToBoard(IBoard<T> board);
+        IBoard<T> ExecuteRules(IBoard<T> board);
     }
 }
