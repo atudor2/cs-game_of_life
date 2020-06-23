@@ -5,8 +5,38 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GameOfLifeGUI"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" WindowState="Maximized">
+        Title="MainWindow" Height="450" Width="800" WindowState="Maximized" Loaded="MainWindow_OnLoaded"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <Grid>
-        <Canvas Name="GameCanvas"></Canvas>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="Auto"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Image Name="GridImage" Grid.Column="0"></Image>
+        <StackPanel Grid.Column="1" Orientation="Vertical" MinWidth="200">
+            <Grid Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <ToggleButton Grid.Row="0" Click="ButtonBase_OnClick">Run</ToggleButton>
+                <Button Grid.Row="1" Click="OnRandomise_Click">Randomise Board</Button>
+                <Button Grid.Row="3" Click="OnReset_Click">Reset Board</Button>
+                <StackPanel Grid.Row="4" Orientation="Horizontal">
+                    <ComboBox Name="ComboBox" ItemsSource="{Binding Patterns}" SelectedIndex="0"></ComboBox>
+                    <Button Click="OnInsertPattern_Click">Insert Pattern</Button>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Grid.Row="5">
+                    <TextBlock Text="Update Speed (ms): "></TextBlock>
+                    <TextBlock Text="{Binding TickSpeed}"></TextBlock>
+                </StackPanel>
+                <Slider Name="SpeedSlider" Grid.Row="6" Ticks="5" Minimum="1" Maximum="10" ValueChanged="Slider_valueChange"></Slider>
+            </Grid>
+        </StackPanel>
     </Grid>
 </Window>

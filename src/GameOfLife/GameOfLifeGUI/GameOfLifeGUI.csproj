@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="WriteableBitmapEx" Version="1.6.5" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\GameOfLife\GameOfLife.csproj" />
   </ItemGroup>
 

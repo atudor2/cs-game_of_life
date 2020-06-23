@@ -1,10 +1,13 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
-using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Shapes;
+using System.Windows.Media.Imaging;
 using GameOfLife;
 using GameOfLife.Boards;
 using GameOfLife.Rules;
@@ -14,85 +17,158 @@ namespace GameOfLifeGUI
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
+        private readonly WriteableBitmap _bitmap;
+        private readonly Thread _loopThread;
+        private readonly IBoardRulesEngine<ConwayCellState> _rules;
+        private IBoard<ConwayCellState> _board;
+        private bool _running;
+        private readonly object _boardLock = new object();
+        private const int BaseTickSpeed = 50;
+        private readonly int _boardSize = 100;
+        private int _tickSpeed = BaseTickSpeed;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public int TickSpeed
+        {
+            get => _tickSpeed;
+            set
+            {
+                _tickSpeed = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public List<string> Patterns { get; set; }
+
         public MainWindow()
         {
+            DataContext = this;
+
             InitializeComponent();
-            var thr = new Thread(GameLoop);
-            thr.Start();
+
+            _bitmap = BitmapFactory.New(512, 512);
+            GridImage.Source = _bitmap;
+
+            _loopThread = new Thread(GameLoop);
+            _rules = ConwaysGameOfLife.GetRulesEngine();
+
+            ResetBoard();
+
+            Patterns = new List<string>(Enum.GetNames(typeof(ConwaysGameOfLife.PredefinedPatterns)));
+            ComboBox.ItemsSource = Patterns;
+        }
+
+        private void ResetBoard()
+        {
+            LockBoard(() => _board = ConwaysGameOfLife.GetBlankBoard(_boardSize, _boardSize));
+        }
+
+        private void RandomiseBoard()
+        {
+            LockBoard(() => ConwaysGameOfLife.RandomiseBoard(_board));
         }
 
         private void Tick()
         {
-            Thread.Sleep(100);
+            Thread.Sleep(TickSpeed);
         }
 
         private void GameLoop(object? obj)
         {
-            var board = ConwaysGameOfLife.GetBlankBoard(100, 100);
-            var rules = ConwaysGameOfLife.GetRulesEngine();
-
-            ConwaysGameOfLife.RenderPredefinedPattern(board, ConwaysGameOfLife.PredefinedPatterns.XKCDRip, (25, 25));
-
-            var board2 = board;
-            Dispatcher.Invoke(() => RenderBoard(board2));
-
-            Thread.Sleep(1000);
-
             // Life loop
             while (true)
             {
+                Dispatcher.Invoke(RenderBoard);
                 Tick();
 
-                var board1 = board;
-                Dispatcher.Invoke(() => RenderBoard(board1));
-
-                board = rules.ExecuteRules(board);
+                if (_running)
+                {
+                    LockBoard(() => _board = _rules.ExecuteRules(_board));
+                }
             }
         }
 
-        private void RenderBoard(IBoard<ConwayCellState> board)
+        private void RenderBoard()
         {
-            GameCanvas.Children.Clear();
+            var board = _board;
 
-            var width = GameCanvas.ActualWidth;
-            var height = GameCanvas.ActualHeight;
+            var width = _bitmap.PixelHeight;
+            var height = _bitmap.PixelHeight;
 
             var heightRatio = height / board.Height;
             var widthRatio = width / board.Width;
 
-            //foreach (var cell in board.GetCells().Where(c => c.CellValue.IsAlive()))
-            foreach (var cell in board.GetCells())
+            using (_bitmap.GetBitmapContext())
             {
-                Rectangle rect;
-                if (cell.CellValue.IsAlive())
-                {
-                    rect = new Rectangle
-                    {
-                        Stroke = new SolidColorBrush(Colors.Black),
-                        Fill = new SolidColorBrush(Colors.Black),
-                        Width = widthRatio,
-                        Height = heightRatio
-                    };
-                }
-                else
-                {
-                    rect = new Rectangle
-                    {
-                        Stroke = new SolidColorBrush(Colors.Black),
-                        Fill = new SolidColorBrush(Colors.White),
-                        Width = widthRatio,
-                        Height = heightRatio
-                    };
-                }
+                _bitmap.Clear(Colors.White);
 
-                var canvasX = cell.X * widthRatio;
-                var canvasY = cell.Y * heightRatio;
-                Canvas.SetLeft(rect, canvasX);
-                Canvas.SetTop(rect, canvasY);
-                GameCanvas.Children.Add(rect);
+                foreach (var cell in board.GetCells())
+                {
+                    var rectX = cell.X * widthRatio;
+                    var rectY = cell.Y * heightRatio;
+
+                    var x1 = rectX;
+                    var x2 = rectX + widthRatio;
+                    var y1 = rectY;
+                    var y2 = rectY + heightRatio;
+
+                    if (cell.CellValue.IsAlive())
+                    {
+                        _bitmap.FillRectangle(x1, y1, x2, y2, Colors.Black);
+                    }
+                    else
+                    {
+                        _bitmap.DrawRectangle(x1, y1, x2, y2, Colors.Black);
+                    }
+                }
             }
+        }
+
+        private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            _loopThread.Start();
+        }
+
+        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        {
+            _running = !_running;
+        }
+
+        private void OnReset_Click(object sender, RoutedEventArgs e)
+        {
+            ResetBoard();
+        }
+
+        private void OnRandomise_Click(object sender, RoutedEventArgs e)
+        {
+            RandomiseBoard();
+        }
+
+        private void OnInsertPattern_Click(object sender, RoutedEventArgs e)
+        {
+            var pattern = Enum.Parse<ConwaysGameOfLife.PredefinedPatterns>(ComboBox.SelectedValue?.ToString(), true);
+            LockBoard(() => ConwaysGameOfLife.RenderPredefinedPattern(_board, pattern, (25, 25)));
+        }
+
+        private void LockBoard(Action action)
+        {
+            lock (_boardLock)
+            {
+                action();
+            }
+        }
+
+        private void Slider_valueChange(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            TickSpeed = (int)(SpeedSlider.Value * BaseTickSpeed);
+        }
+
+        protected void OnPropertyChanged([CallerMemberName] string name = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
     }
 }
