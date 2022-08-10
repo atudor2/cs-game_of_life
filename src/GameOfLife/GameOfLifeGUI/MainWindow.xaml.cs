@@ -19,17 +19,18 @@ namespace GameOfLifeGUI
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
+        private const int BaseTickSpeed = 50;
+        private const int BoardSize = 100;
+
         private readonly WriteableBitmap _bitmap;
         private readonly Thread _loopThread;
         private readonly IBoardRulesEngine<ConwayCellState> _rules;
-        private IBoard<ConwayCellState> _board;
+        private IBoard<ConwayCellState> _board = null!;
         private bool _running;
-        private readonly object _boardLock = new object();
-        private const int BaseTickSpeed = 50;
-        private readonly int _boardSize = 100;
+        private readonly object _boardLock = new();
         private int _tickSpeed = BaseTickSpeed;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public int TickSpeed
         {
@@ -63,7 +64,7 @@ namespace GameOfLifeGUI
 
         private void ResetBoard()
         {
-            LockBoard(() => _board = ConwaysGameOfLife.GetBlankBoard(_boardSize, _boardSize));
+            LockBoard(() => _board = ConwaysGameOfLife.GetBlankBoard(BoardSize, BoardSize));
         }
 
         private void RandomiseBoard()
@@ -149,7 +150,10 @@ namespace GameOfLifeGUI
 
         private void OnInsertPattern_Click(object sender, RoutedEventArgs e)
         {
-            var pattern = Enum.Parse<ConwaysGameOfLife.PredefinedPatterns>(ComboBox.SelectedValue?.ToString(), true);
+            var selectedValue = ComboBox.SelectedValue?.ToString();
+            if (selectedValue is null) return;
+
+            var pattern = Enum.Parse<ConwaysGameOfLife.PredefinedPatterns>(selectedValue, true);
             LockBoard(() => ConwaysGameOfLife.RenderPredefinedPattern(_board, pattern, (25, 25)));
         }
 
@@ -166,7 +170,7 @@ namespace GameOfLifeGUI
             TickSpeed = (int)(SpeedSlider.Value * BaseTickSpeed);
         }
 
-        protected void OnPropertyChanged([CallerMemberName] string name = null)
+        protected void OnPropertyChanged([CallerMemberName] string? name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
