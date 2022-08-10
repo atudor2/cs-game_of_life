@@ -38,6 +38,8 @@ namespace GameOfLife
             using var reader = embeddedProvider.GetFileInfo(path).CreateReadStream();
             using var bmp = new Bitmap(reader);
 
+            // Enumerable points is never accessed outside of method scope so safe
+            // ReSharper disable once AccessToDisposedClosure
             var points =
                 from bmpX in Enumerable.Range(0, bmp.Width)
                 from bmpY in Enumerable.Range(0, bmp.Height)
@@ -45,7 +47,7 @@ namespace GameOfLife
                 {
                     x = bmpX,
                     y = bmpY,
-                    pixel = bmp.GetPixel(bmpX, bmpY)
+                    pixel = bmp.GetPixel(bmpX, bmpY) 
                 };
 
             var bmpPoints = new bool[bmp.Width, bmp.Height];
